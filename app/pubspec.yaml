@@ -1,0 +1,35 @@
+name: ar_coin_hunt
+description: AR Coin Hunt mobile app (Flutter, AR, Clean Architecture)
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ar_flutter_plugin: ^0.7.3
+  geolocator: ^9.0.2
+  permission_handler: ^10.2.0
+  dio: ^5.7.0
+  flutter_bloc: ^8.1.6
+  get_it: ^7.7.0
+  flutter_secure_storage: ^9.2.2
+  intl: any
+  url_launcher: ^6.3.0
+  animations: ^2.0.11
+  cached_network_image: ^3.3.1
+  path_provider: ^2.1.4
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/models/coin.glb
