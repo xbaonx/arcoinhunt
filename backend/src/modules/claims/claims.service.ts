@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, ForbiddenException, TooManyRequestsException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserClaim } from '../../entities/user-claim.entity';
@@ -56,11 +56,11 @@ export class ClaimsService {
   async ensureCaptureEligibility(userId: string, locationId: string, campaign: Campaign) {
     const daily = await this.countDaily(userId);
     if (daily >= this.cfg.dailyQuota) {
-      throw new TooManyRequestsException(`Daily quota exceeded (${this.cfg.dailyQuota}/day)`);
+      throw new HttpException(`Daily quota exceeded (${this.cfg.dailyQuota}/day)`, HttpStatus.TOO_MANY_REQUESTS);
     }
     const weekly = await this.countWeekly(userId);
     if (weekly >= this.cfg.weeklyQuota) {
-      throw new TooManyRequestsException(`Weekly quota exceeded (${this.cfg.weeklyQuota}/week)`);
+      throw new HttpException(`Weekly quota exceeded (${this.cfg.weeklyQuota}/week)`, HttpStatus.TOO_MANY_REQUESTS);
     }
     const already = await this.hasClaimAtLocation(userId, locationId);
     if (already) {
