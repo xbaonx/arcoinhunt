@@ -4,7 +4,6 @@ import { NftService } from './nft.service';
 import { CaptureDto } from './dto/capture.dto';
 import { TransferDto } from './dto/transfer.dto';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { Express } from 'express';
 
 @ApiTags('nft')
 @Controller()
@@ -38,7 +37,7 @@ export class NftController {
       required: ['image', 'userId', 'lat', 'lng', 'locationId'],
     },
   })
-  async capture(@UploadedFile() file: Express.Multer.File, @Body() dto: CaptureDto) {
+  async capture(@UploadedFile() file: any, @Body() dto: CaptureDto) {
     if (!file) throw new BadRequestException('image required');
     return this.service.capture(dto.userId, dto.locationId, dto.lat, dto.lng, file.buffer, file.originalname, dto.radiusMeters || 100);
   }
