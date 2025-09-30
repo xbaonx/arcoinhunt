@@ -1,17 +1,20 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Init1700000000000 implements MigrationInterface {
-    name = 'Init1700000000000'
+  name = 'Init1700000000000'
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS postgis`);
-        await queryRunner.query(`
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Enable PostGIS extension
+    await queryRunner.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+    
+    await queryRunner.query(`
         CREATE TABLE IF NOT EXISTS locations (
           id BIGSERIAL PRIMARY KEY,
           name VARCHAR(128),
           geom GEOGRAPHY(POINT, 4326) NOT NULL
         );`);
-        await queryRunner.query(`
+    
+    await queryRunner.query(`
         CREATE TABLE IF NOT EXISTS campaigns (
           id BIGSERIAL PRIMARY KEY,
           name VARCHAR(128) NOT NULL,
@@ -20,7 +23,8 @@ export class Init1700000000000 implements MigrationInterface {
           start_at TIMESTAMPTZ,
           end_at TIMESTAMPTZ
         );`);
-        await queryRunner.query(`
+    
+    await queryRunner.query(`
         CREATE TABLE IF NOT EXISTS user_claims (
           id BIGSERIAL PRIMARY KEY,
           user_id VARCHAR(128) NOT NULL,
@@ -35,7 +39,8 @@ export class Init1700000000000 implements MigrationInterface {
           created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
           CONSTRAINT uq_user_loc UNIQUE(user_id, location_id)
         );`);
-        await queryRunner.query(`
+    
+    await queryRunner.query(`
         CREATE TABLE IF NOT EXISTS transfers (
           id BIGSERIAL PRIMARY KEY,
           user_id VARCHAR(128) NOT NULL,
@@ -44,16 +49,17 @@ export class Init1700000000000 implements MigrationInterface {
           tx_hash VARCHAR(80),
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );`);
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_user_claims_user_date ON user_claims (user_id, created_at);`);
-        await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_locations_geom ON locations USING GIST (geom);`);
-    }
+    
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_user_claims_user_date ON user_claims (user_id, created_at);`);
+    await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_locations_geom ON locations USING GIST (geom);`);
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX IF EXISTS idx_locations_geom;`);
-        await queryRunner.query(`DROP INDEX IF EXISTS idx_user_claims_user_date;`);
-        await queryRunner.query(`DROP TABLE IF EXISTS transfers;`);
-        await queryRunner.query(`DROP TABLE IF EXISTS user_claims;`);
-        await queryRunner.query(`DROP TABLE IF EXISTS campaigns;`);
-        await queryRunner.query(`DROP TABLE IF EXISTS locations;`);
-    }
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_locations_geom;`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_user_claims_user_date;`);
+    await queryRunner.query(`DROP TABLE IF EXISTS transfers;`);
+    await queryRunner.query(`DROP TABLE IF EXISTS user_claims;`);
+    await queryRunner.query(`DROP TABLE IF EXISTS campaigns;`);
+    await queryRunner.query(`DROP TABLE IF EXISTS locations;`);
+  }
 }
