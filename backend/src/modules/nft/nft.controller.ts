@@ -4,7 +4,6 @@ import { NftService } from './nft.service';
 import { CaptureDto } from './dto/capture.dto';
 import { TransferDto } from './dto/transfer.dto';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
 import { Express } from 'express';
 
 @ApiTags('nft')
@@ -18,13 +17,11 @@ export class NftController {
   }
 
   @Post('nft/transfer')
-  @Throttle({ limit: 5, ttl: 60 })
   async transfer(@Body() dto: TransferDto) {
     return this.service.transfer(dto.userId, dto.tokenId, dto.userWallet);
   }
 
   @Post('ar/capture')
-  @Throttle({ limit: 10, ttl: 60 })
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
