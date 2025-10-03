@@ -1,7 +1,7 @@
 class AppConfig {
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8080',
+    defaultValue: 'https://arcoinhunt.onrender.com',
   );
   static const defaultChainId = int.fromEnvironment('CHAIN_ID', defaultValue: 80002);
   static const contractAddress = String.fromEnvironment('CONTRACT_ADDRESS', defaultValue: '');

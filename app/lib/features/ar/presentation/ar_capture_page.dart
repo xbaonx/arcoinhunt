@@ -1,6 +1,13 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
+import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
+import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin/datatypes/node_types.dart';
+import 'package:vector_math/vector_math_64.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -41,23 +48,49 @@ class _ARCapturePageState extends State<ARCapturePage> {
             RepaintBoundary(
               key: repaintKey,
               child: ARView(
-                onARViewCreated: (c) async {
-                  sessionManager = c.sessionManager;
-                  objectManager = c.arObjectManager;
-                  await sessionManager?.setup();
-                  await objectManager?.setup();
+                onARViewCreated: (
+                  ARSessionManager arSessionManager,
+                  ARObjectManager arObjectManager,
+                  ARAnchorManager arAnchorManager,
+                  ARLocationManager arLocationManager,
+                ) async {
+                  sessionManager = arSessionManager;
+                  objectManager = arObjectManager;
+                  await sessionManager?.onInitialize(
+                    showFeaturePoints: false,
+                    showPlanes: true,
+                    showWorldOrigin: false,
+                  );
+                  await objectManager?.onInitialize();
                   // ensure we have a user id
                   userId ??= await GetIt.I<UserIdService>().getOrCreate();
                   try {
                     final node = ARNode(
-                      type: NodeType.localGLTF2,
-                      uri: 'assets/models/coin.glb',
+                      // Use a web-hosted GLB to ensure compatibility on all platforms
+                      type: NodeType.webGLB,
+                      uri: 'https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/Duck/glTF-Binary/Duck.glb',
                       scale: Vector3(0.2, 0.2, 0.2),
                       position: Vector3(0, 0, -1.0),
                     );
                     await objectManager?.addNode(node);
-                  } catch (_) {
-                    // If asset missing, do nothing
+                  } catch (e) {
+                    // Fallback: nếu asset trống/thiếu, thử tải GLB mẫu qua mạng để test nhanh
+                    try {
+                      final webNode = ARNode(
+                        type: NodeType.webGLB,
+                        uri: 'https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/Duck/glTF-Binary/Duck.glb',
+                        scale: Vector3(0.2, 0.2, 0.2),
+                        position: Vector3(0, 0, -1.0),
+                      );
+                      await objectManager?.addNode(webNode);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Đã tải mô hình mẫu (Duck.glb) tạm thời.')),
+                        );
+                      }
+                    } catch (_) {
+                      // Bỏ qua nếu fallback cũng thất bại
+                    }
                   }
                 },
               ),

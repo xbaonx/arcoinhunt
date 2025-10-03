@@ -29,21 +29,25 @@ class _NftListPageState extends State<NftListPage> with SingleTickerProviderStat
       length: 2,
       child: BlocProvider(
         create: (_) => NFTCubit(GetIt.I<ApiClient>())..load(userId, status: 'reserved'),
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text('My NFTs'),
-            bottom: TabBar(
-              controller: ctrl,
-              tabs: const [Tab(text: 'Reserved'), Tab(text: 'In Wallet')],
-              onTap: (i) => context.read<NFTCubit>().load(userId, status: i == 0 ? 'reserved' : 'transferred'),
+        child: Builder(
+          builder: (context) => Scaffold(
+            appBar: AppBar(
+              title: const Text('My NFTs'),
+              bottom: TabBar(
+                controller: ctrl,
+                tabs: const [Tab(text: 'Reserved'), Tab(text: 'In Wallet')],
+                onTap: (i) => context
+                    .read<NFTCubit>()
+                    .load(userId, status: i == 0 ? 'reserved' : 'transferred'),
+              ),
             ),
-          ),
-          body: TabBarView(
-            controller: ctrl,
-            children: [
-              _List(status: 'reserved', userId: userId),
-              _List(status: 'transferred', userId: userId),
-            ],
+            body: TabBarView(
+              controller: ctrl,
+              children: [
+                _List(status: 'reserved', userId: userId),
+                _List(status: 'transferred', userId: userId),
+              ],
+            ),
           ),
         ),
       ),
@@ -68,7 +72,12 @@ class _List extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<NFTCubit, NFTState>(
       builder: (context, state) {
-        if (state is NFTError) return Center(child: Text(state.message));
+        if (state is NFTLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (state is NFTError) {
+          return Center(child: Text(state.message));
+        }
         final items = (state as NFTLoaded).items;
         if (items.isEmpty) return const Center(child: Text('No items'));
         return ListView.separated(
@@ -91,17 +100,26 @@ class _List extends StatelessWidget {
                         context.read<NFTCubit>().load(userId, status: 'reserved');
                       },
                       child: const Text('Transfer'))
-                  : TextButton(onPressed: () => _openOpenSea(it['token_id']), child: const Text('OpenSea')),
+                  : TextButton(
+                      onPressed: () async {
+                        final url = '${AppConfig.openSeaBase}/${AppConfig.contractAddress}/${it['token_id']}';
+                        final uri = Uri.parse(url);
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                      child: const Text('OpenSea'),
+                    ),
             );
           },
-        ),
+        );
       },
     );
   }
 
   Future<String?> _askWallet(BuildContext context) async {
     final ctrl = TextEditingController();
-{{ ... }}
+    return await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Your wallet'),

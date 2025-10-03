@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
   ar_flutter_plugin: ^0.7.3
   geolocator: ^9.0.2
-  permission_handler: ^10.2.0
   dio: ^5.7.0
   flutter_bloc: ^8.1.6
   get_it: ^7.7.0
@@ -28,6 +27,10 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+
+dependency_overrides:
+  permission_handler: ^12.0.1
+  permission_handler_android: ^12.0.1
 
 flutter:
   uses-material-design: true
